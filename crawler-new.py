@@ -4,6 +4,7 @@ import json
 import time
 import urllib3
 urllib3.disable_warnings()
+import ssl
 
 
 def main_crawler(add, path):  # returning a list of metadata dicts expected
@@ -199,6 +200,7 @@ def write2json(meta, path):
 
 if __name__ == '__main__':
     start = time.time()
+    ssl._create_default_https_context = ssl._create_unverified_context
     addls = ['https://dblp.uni-trier.de/db/conf/acl/', 'https://dblp.uni-trier.de/db/conf/naacl/',
              'https://dblp.uni-trier.de/db/conf/emnlp/', 'https://dblp.uni-trier.de/db/conf/coling/']  # 要爬取的DBLP会议页面
     conf_name = ['acl', 'naacl', 'emnlp', 'coling']  # 要爬取的会议名称
