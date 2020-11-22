@@ -13,7 +13,12 @@ def main_crawler(add, path):  # returning a list of metadata dicts expected
     root = requests.get(add, verify=False).content  # index页
     rootTree = etree.HTML(root)
 
-    proceedingsls = rootTree.xpath(".//li[@class='entry editor toc']")
+    publ_index = rootTree.xpath(".//ul[@class='publ-list']")
+    proceedingsls = []
+    for publ in publ_index:
+        each_pro_ls = publ.xpath("./li[@class='entry editor toc']")
+        proceedingsls.append(each_pro_ls[0])  # 只采集long papers
+
     for proceedings in proceedingsls:  # 外层循环获取conf和proceedings信息
         proceedingsTitle = proceedings.xpath(".//span[@class='title' and @itemprop='name']/text()")
         proceedingsTitle = ''.join(proceedingsTitle)
@@ -27,28 +32,28 @@ def main_crawler(add, path):  # returning a list of metadata dicts expected
         isbn = proceedings.xpath(".//span[@itemprop='isbn']/text()")
         isbn = ''.join(isbn)
 
-        chairs = proceedings.xpath(".//span[@itemprop='author']")
-        chairsInfo = []
-        for chair in chairs:
-            chairInfo = {}
-            chairName = chair.xpath(".//span[@itemprop='name']/text()")
-            chairName = ''.join(chairName)
-
-            chairTitle = chair.xpath(".//span[@itemprop='name']/@title")
-            chairTitle = ''.join(chairTitle)
-
-            chairSite = chair.xpath(".//a[@itemprop='url']/@href")
-            chairSite = ''.join(chairSite)
-
-            chairPage = author_page_crawler(chairSite)
-
-            res = affiliation_crawler(chairSite)
-            chairAffiliation = res[0]
-            chairOrcid = res[1]
-
-            chairInfo.update({'name': chairName, 'title': chairTitle, 'site': chairSite, 'page': chairPage,
-                               'affiliation': chairAffiliation, 'orcid': chairOrcid})
-            chairsInfo.append(chairInfo)
+        # chairs = proceedings.xpath(".//span[@itemprop='author']")
+        # chairsInfo = []
+        # for chair in chairs:
+        #     chairInfo = {}
+        #     chairName = chair.xpath(".//span[@itemprop='name']/text()")
+        #     chairName = ''.join(chairName)
+        #
+        #     chairTitle = chair.xpath(".//span[@itemprop='name']/@title")
+        #     chairTitle = ''.join(chairTitle)
+        #
+        #     chairSite = chair.xpath(".//a[@itemprop='url']/@href")
+        #     chairSite = ''.join(chairSite)
+        #
+        #     chairPage = author_page_crawler(chairSite)
+        #
+        #     res = affiliation_crawler(chairSite)
+        #     chairAffiliation = res[0]
+        #     chairOrcid = res[1]
+        #
+        #     chairInfo.update({'name': chairName, 'title': chairTitle, 'site': chairSite, 'page': chairPage,
+        #                        'affiliation': chairAffiliation, 'orcid': chairOrcid})
+        #     chairsInfo.append(chairInfo)
 
         contentsls = proceedings.xpath(".//a[@class='toc-link']/@href")
         for contents in contentsls:  # 中层循环获取每个volume的页面
@@ -112,21 +117,31 @@ def main_crawler(add, path):  # returning a list of metadata dicts expected
                     paperPagination = leaf.xpath(".//span[@itemprop='pagination']/text()")
                     paperPagination = ''.join(paperPagination)  # 所在页数范围
 
-                    paperGenre = leaf.xpath(".//meta[@property='genre']/@content")
-                    paperGenre = ''.join(paperGenre)  # 学科
+                    # paperGenre = leaf.xpath(".//meta[@property='genre']/@content")
+                    # paperGenre = ''.join(paperGenre)  # 学科
 
                     meta.update({
                         'title': paperTitle,
                         'datePublished': paperDate,
                         'pagination': paperPagination,
-                        'genre': paperGenre,
                         'authorsInfo': authorsInfo,
                         'session': session,
                         'proceedingsTitle': proceedingsTitle,
                         'publisher': publisher,
                         'publYear': publYear,
-                        'isbn': isbn,
-                        'chairsInfo': chairsInfo})
+                        'isbn': isbn})
+                    # meta.update({
+                    #             'title': paperTitle,
+                    #             'datePublished': paperDate,
+                    #             'pagination': paperPagination,
+                    #             'genre': paperGenre,
+                    #             'authorsInfo': authorsInfo,
+                    #             'session': session,
+                    #             'proceedingsTitle': proceedingsTitle,
+                    #             'publisher': publisher,
+                    #             'publYear': publYear,
+                    #             'isbn': isbn,
+                    #             'chairsInfo': chairsInfo})
                     print(meta)
                     write2json(meta, f)
     f.close()
