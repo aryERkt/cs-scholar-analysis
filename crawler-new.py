@@ -76,7 +76,7 @@ def main_crawler(add, path):  # returning a list of metadata dicts expected
                 if len(headers) == 0:  # 没有区分session
                     session = ''
                 else:  # 有区分session
-                    session = sessions[i-1]
+                    session = sessions[i - (len(publ_ls) - len(sessions))]
                     session = ''.join(session)
 
                 for leaf in leafNode:  # 内层循环获取每篇文章
@@ -211,4 +211,4 @@ if __name__ == '__main__':
         main_crawler(addls[i], file_name)
         time.sleep(5)
     end = time.time()
-    print("执行完成，共用时{0}s".format(end-start))
+    print("执行完成，共用时{0}s".format(end - start))
